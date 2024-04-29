@@ -1,0 +1,1062 @@
+<script type="module">
+  import {
+      initializeApp
+  } from 'https://www.gstatic.com/firebasejs/9.17.1/firebase-app.js';
+  import {
+      getAuth,
+      signInWithEmailAndPassword
+  } from 'https://www.gstatic.com/firebasejs/9.17.1/firebase-auth.js';
+  import {
+      getFirestore,
+      collection,
+      getDocs
+  } from 'https://www.gstatic.com/firebasejs/9.17.1/firebase-firestore.js';
+
+  const initializeFirebaseApp = () => {
+      fetch('https://3901023-sb3.extforms.netsuite.com/app/site/hosting/scriptlet.nl?script=2718&deploy=16&compid=3901023_SB3&h=20c366096aaedeeb689c', {
+          method: 'GET'
+      })
+      .then(response => response.json())
+      .then(data => {
+          var secretValues = {
+              secret1: data.field1,
+              secret2: data.field2,
+              secret3: data.field3,
+              secret4: data.field4,
+              secret5: data.field5,
+              secret6: data.field6,
+              secret7: data.field7,
+              secret8: data.field8
+          };
+
+          var firebaseConfig = {
+              apiKey: secretValues.secret1,
+              authDomain: secretValues.secret3,
+              databaseURL: secretValues.secret4,
+              projectId: secretValues.secret8,
+              storageBucket: "optic-mount-match-tool.appspot.com",
+              messagingSenderId: secretValues.secret6,
+              appId: secretValues.secret2
+          };
+
+          const app = initializeApp(firebaseConfig);
+          return signInWithEmailAndPassword(getAuth(app), secretValues.secret5, secretValues.secret7);
+      })
+      .then(() => getFirestoreCollection('optic-mount-match'))
+      .then((querySnapshot) => {
+          renderCollection(querySnapshot);
+      })
+      .catch(error => console.error('Error fetching API secrets:', error));
+  };
+
+  const getFirestoreCollection = (collectionName) => {
+      const db = getFirestore();
+      return getDocs(collection(db, collectionName));
+  };
+
+  let urlParams = new URLSearchParams(window.location.search);
+  const renderCollection = (querySnapshot) => {
+      var gridContainer = document.getElementById('grid-container');
+      gridContainer.innerHTML = '';
+      const searchingFor = urlParams.get('searchingFor');
+      const docData = querySnapshot.docs.map(doc => ({
+          logoUrl: doc.data().logoUrl,
+          mountLink: doc.data().mountLink,
+          mountingStandard: doc.data().mountingStandard,
+          productImageUrl: doc.data().productImageUrl,
+          productLink: doc.data().productLink
+      }));
+
+      const sortedDocData = docData.sort((a, b) => {
+          const mountingStandardA = a.mountingStandard || "";
+          const mountingStandardB = b.mountingStandard || "";
+          if (mountingStandardA === "" && mountingStandardB !== "") {
+              return 1;
+          } else if (mountingStandardA !== "" && mountingStandardB === "") {
+              return -1;
+          } else {
+              return mountingStandardA.localeCompare(mountingStandardB);
+          }
+      });
+
+      var mountLink, opticLink;
+
+      var linkVars = [];
+
+      sortedDocData.forEach(doc => {
+          var card = document.createElement('div');
+          card.classList.add('card');
+          var link = document.createElement('a');
+          mountLink = doc.mountLink; 
+          opticLink = doc.productLink;
+          link.href = searchingFor === 'mount' ? doc.mountLink : doc.productLink;
+          link.target = '_blank';
+          link.classList.add('footprint-link');
+          var logoImg = document.createElement('img');
+          logoImg.src = doc.logoUrl;
+          logoImg.classList.add('logo-image');
+          var productImg = document.createElement('img');
+          productImg.src = doc.productImageUrl;
+          productImg.classList.add('product-image');
+          var text = document.createElement('p');
+          text.textContent = doc.mountingStandard;
+          text.classList.add('product-name');
+          link.appendChild(logoImg);
+          link.appendChild(productImg);
+          link.appendChild(text);
+          card.appendChild(link);
+          gridContainer.appendChild(card);
+
+          linkVars.push({ mountLink, opticLink });
+
+
+          // function callback() {
+          //     createCardLink(null, mountLink, opticLink);
+          // }
+           function callback() {
+              // console.log(linkVars);
+              setLinkVars(linkVars);
+          }
+          callback();
+      });
+  };
+  initializeFirebaseApp();
+</script>
+
+<!-- optic match netsuite overrides -->
+<style>
+  .shopping-layout-content {
+      background-color: black !important;
+  }
+
+  .get-started-text,
+  .looking-for-text,
+  .footprint-title {
+      font-family: 'Poppins', sans-serif !important;
+      color: black !important;
+      text-transform: none !important;
+      text-wrap: balance;
+  }
+
+  .section-a-button-wrapper {
+      justify-content: center !important;
+  }
+</style>
+<!-- default netsuite overrides -->
+<!-- whole page -->
+<style>
+  /* hide ribbon */
+  .deal-ribbon-wrapper {
+      display: none !important;
+  }
+
+  .dod-ribbon-container {
+      min-height: 50px;
+      display: none !important;
+  }
+
+  /* hide Norton */
+  #_GUARANTEE_SealSpan {
+      display: none !important;
+  }
+
+  /* chat and FAQ Buttons */
+  .chat-fixed-tab {
+      display: none !important;
+  }
+
+  .faq-fixed-tab {
+      display: none !important;
+  }
+
+  /* hide 20% off */
+  #ltkPopupButtonTriggerContainer.ltkpopup-pb-close-btn {
+      display: none !important;
+  }
+
+  .shopping-layout-breadcrumb {
+      display: none;
+  }
+
+  .cms-landing-page-container {
+      max-width: 100% !important;
+      padding: 0 15px;
+  }
+
+  .cms-landing-page-row-full-col {
+      padding-left: 0px !important;
+      padding-right: 0px !important;
+  }
+
+  .opImgPad {
+      padding-bottom: 9px;
+  }
+
+  #correctPadding {
+      padding-left: 7.5px;
+      padding-right: 7.5px;
+  }
+
+  #fullFeaturedCategory {
+      padding-right: 7.5px;
+      padding-left: 7.5px;
+  }
+
+  .featuredCategories {
+      /* width: 47%; */
+      min-height: 220px;
+      /* float: left; */
+      /* margin: 0px 0px 7px 0px; */
+      padding-bottom: 9px;
+  }
+
+  .cms-content ul {
+      margin-left: 0px;
+  }
+
+  #span {
+      border-top: 2px solid black;
+      display: block;
+      padding-top: 15px;
+      padding-bottom: 15px;
+      margin: 0px -8px;
+  }
+
+  ul,
+  li {
+      line-height: 2;
+  }
+
+  .buy-now {
+      width: 50%;
+      text-align: center;
+      display: inline-block;
+      padding: 6px 12px;
+      font-size: 14px;
+      border-radius: 10px;
+      background-color: #007bff;
+      color: white;
+      margin: 15px 25%;
+  }
+
+  @font-face {
+      font-family: "DIN-Pro-Regular";
+      src: url("/SSP%20Applications/NetSuite%20Inc.%20-%20SCA%202019.2/Development/DIN_Pro_Font_Family_(Fontmirror)/DIN%20Pro%20400.otf") format("opentype");
+  }
+
+  @font-face {
+      font-family: "DIN-Pro-Bold";
+      src: url("/SSP%20Applications/NetSuite%20Inc.%20-%20SCA%202019.2/Development/DIN_Pro_Font_Family_(Fontmirror)/DIN%20Pro%20Bold%20700.otf") format("opentype");
+  }
+
+  @font-face {
+      font-family: "Bebas Neue";
+      src: url("/font/Bebas Neue.ttf") format("opentype");
+  }
+
+  p {
+      font-size: 18px;
+      font-family: "DIN-Pro-Regular";
+      color: black;
+  }
+
+  .col-sm-3 {
+      padding: 0px;
+  }
+
+  .title {
+      margin: 24px auto;
+  }
+
+  #h2 {
+      font-family: "DIN-Pro-Regular";
+      font-size: 30px;
+      /* text-align: center; */
+  }
+
+  .col-md-2 {
+      padding-right: 0px;
+  }
+
+  #a {
+      color: white;
+  }
+
+  #featuresRowPadding {
+      padding: 9.5rem 0px 0rem 0px;
+  }
+
+  h3 {
+      font-family: "DIN-Pro-Regular";
+  }
+
+  #h3 {
+      font-size: 36px;
+      font-family: "DIN-Pro-Regular";
+      color: white;
+  }
+
+  body a:hover {
+      color: black;
+      text-decoration: none !important;
+  }
+
+  /* modile style */
+  @media only screen and (max-width: 800px) {
+      #span {
+          padding-bottom: 0px;
+      }
+
+      #correctPadding {
+          padding-left: 0px;
+          padding-right: 0px;
+      }
+
+      #h2 {
+          font-size: 24px;
+          /* margin: 30px auto 0px; */
+      }
+
+      #featuresRowPadding {
+          padding: 1.375rem 0;
+      }
+
+      #h3 {
+          font-size: 24px;
+      }
+
+      .col-md-2 {
+          padding-left: 15px;
+          padding-right: 15px;
+      }
+
+      #fullFeaturedCategory {
+          padding: 10px;
+      }
+
+      .featuredCategories {
+          min-height: 130px;
+          margin: 5px;
+          padding-bottom: 0%;
+      }
+
+      .cms-content ul {
+          margin-left: 0px !important;
+          margin-right: 0px !important;
+      }
+
+      .cms-content ul {
+          margin-left: 25px !important;
+          margin-right: 25px !important;
+      }
+
+      .back-to-top-mobile {
+          display: none !important;
+      }
+
+      .buy-now {
+          width: 100%;
+          margin: 0%;
+          padding: 10px 15px;
+      }
+
+      #fullFeaturedCategory {
+          padding: 0px;
+      }
+
+      .opImgPad {
+          padding-bottom: 0px;
+      }
+
+      #h3 {
+          color: black;
+      }
+
+      p {
+          color: black;
+      }
+  }
+</style>
+<!-- default styling -->
+<style>
+  @import url("https://fonts.googleapis.com/css2?family=Bebas+Neue&display=swap");
+  @import url("https://fonts.googleapis.com/css2?family=Poppins:wght@400;700&display=swap");
+
+  * {
+      box-sizing: border-box;
+  }
+
+  body {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      overflow-x: hidden;
+  }
+
+  .page {
+      display: none;
+  }
+
+  .main-container {
+      display: flex;
+      flex-direction: column;
+      background-color: #fafafa;
+      min-height: 100%;
+      display: flex;
+  }
+
+  h1 {
+      font-family: "Bebas Neue", sans-serif;
+      color: white;
+      background-color: black;
+      text-align: center;
+      padding: 15px;
+      font-size: 4vw;
+      margin-top: 30px;
+      font-weight: 300;
+      letter-spacing: 1px;
+      margin-bottom: -1px;
+      margin-top: 0;
+  }
+
+  h2 {
+      font-family: "Poppins", sans-serif;
+      font-size: 2.2rem;
+      text-align: center;
+      font-weight: 600;
+  }
+
+  #section-a-wrapper {
+      display: flex;
+      height: 100%;
+      flex: 1;
+      overflow-y: auto;
+  }
+
+  .section-a-image {
+      background-image: url("https://image.primaryarms.com/images/landing-pages/optic-match-tool/pa-optic-firearm?updatedAt=1711637828794");
+      height: auto;
+      background-repeat: no-repeat;
+      background-size: cover;
+      background-position: right bottom;
+      width: 53%;
+  }
+
+  .section-a-text-wrapper {
+      width: 100%;
+      text-align: center;
+      width: 47%;
+      display: flex;
+      justify-content: center;
+      flex-direction: column;
+  }
+
+  .get-started-text {
+      font-weight: 400;
+      margin-bottom: 0px;
+  }
+
+  .looking-for-text {
+      margin-top: 15px;
+  }
+
+  .section-a-button-wrapper {
+      display: flex;
+      justify-content: center;
+      flex-direction: row;
+      width: 100%;
+      height: auto;
+  }
+
+  #mounts-button,
+  #optics-button {
+      border-radius: 10px;
+      cursor: pointer;
+      width: 16vw;
+      height: 20vw;
+      margin: 2vw;
+      border: none;
+      font-family: "Bebas Neue", sans-serif;
+      font-size: 1.7rem;
+      text-align: center;
+      display: flex;
+      justify-content: center;
+      align-items: flex-end;
+      background-size: contain;
+      background-repeat: no-repeat;
+      background-position: center;
+      padding-bottom: 1vw;
+      padding-top: 1.3vw;
+      padding-right: 1vw;
+      padding-left: 1vw;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1), 0 1px 3px rgba(0, 0, 0, 0.08);
+      background-color: white;
+  }
+
+  #footprints-page {
+      flex-direction: column;
+  }
+
+  a {
+      text-decoration: none;
+  }
+
+  #mounts-button {
+      background-image: url("https://image.primaryarms.com/images/landing-pages/optic-match-tool/mount-button?updatedAt=1711725457996");
+      background-size: 93%;
+      background-position: 55% 5%;
+  }
+
+  #optics-button {
+      background-image: url("https://image.primaryarms.com/images/landing-pages/optic-match-tool/optic-button?updatedAt=1711725458221");
+      background-size: 80%;
+      background-position: 70% 30%;
+  }
+
+  #mounts-button::after,
+  #optics-button::after {
+      content: attr(data-text);
+      position: absolute;
+      bottom: 10px;
+  }
+
+  #mounts-button:hover,
+  #optics-button:hover {
+      outline: 3px solid black;
+  }
+
+  .footprints-top {
+      display: flex;
+      flex-direction: row;
+      justify-content: left;
+      padding: 15px 30px 20px 30px;
+  }
+
+  #turn-over-image {
+      width: 12vw;
+      height: auto;
+      align-self: center;
+      padding-bottom: 5px;
+  }
+
+  .footprint-title {
+      margin-top: 0px;
+      width: 100%;
+      font-size: 2.5rem;
+  }
+
+  .footprint-sub {
+      font-family: 'Poppins', sans-serif;
+      text-wrap: balance;
+      padding: 0 150px 20px 150px;
+      text-align: center;
+      color: black;
+      text-transform: none;
+      font-weight: 100;
+      font-size: 1.2rem;
+  }
+
+  .go-back-button {
+      height: 35px;
+      border-radius: 10px;
+      border: none;
+      font-family: 'Poppins', sans-serif;
+      font-weight: bold;
+      cursor: pointer;
+      background-image: url('https://image.primaryarms.com/images/landing-pages/optic-match-tool/back-button?updatedAt=1711983684288');
+      background-size: contain;
+      background-repeat: no-repeat;
+      background-position: center;
+      background-size: 55%;
+      padding: 22px;
+  }
+
+  .footprints-bottom {
+      display: flex;
+      padding-top: 40px;
+  }
+
+  .footprints-middle {
+      display: flex;
+      flex-direction: row;
+      height: 45px;
+      gap: 20px;
+      justify-content: center;
+  }
+
+  .modal {
+      display: none;
+      position: fixed;
+      z-index: 1;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      overflow: auto;
+      background-color: rgba(0, 0, 0, 0.4);
+  }
+
+  .modal-content {
+      background-color: white;
+      display: flex;
+      flex-direction: column;
+      margin: 2% auto;
+      padding: 20px;
+      border: 1px solid #888;
+      width: 35vw;
+      height: auto;
+      border-radius: 10px;
+      font-family: 'Poppins', sans-serif;
+      margin-top: 18vh;
+  }
+
+  h3 {
+      margin-top: 15px;
+      margin-bottom: 0px;
+      font-weight: 600;
+      font-family: 'Poppins', sans-serif;
+      text-transform: none;
+  }
+
+  #modal-pdf {
+      width: 90vw;
+      height: 700px;
+  }
+
+  #pdf-iframe {
+      height: 600px;
+      width: 100%;
+  }
+
+  .close {
+      color: #aaa;
+      float: right;
+      font-size: 28px;
+      font-weight: bold;
+      align-self: flex-end
+  }
+
+  .close:hover,
+  .close:focus {
+      color: black;
+      text-decoration: none;
+      cursor: pointer;
+  }
+
+  .footprint-link {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-decoration: none;
+      color: black;
+  }
+
+  #learn-more-button,
+  #instructions-button {
+      border: none;
+      border-radius: 10px;
+      width: 240px;
+      font-family: 'Poppins', sans-serif;
+      background-color: #c90c2c;
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+  }
+
+  .grid-container {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 25px;
+      max-width: 100%;
+  }
+
+  .card {
+      width: 20vw;
+      margin-bottom: 20px;
+      background-color: white;
+      padding: 20px;
+      box-sizing: border-box;
+      cursor: pointer;
+      border-radius: 10px;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1), 0 1px 3px rgba(0, 0, 0, 0.08);
+      align-items: center;
+  }
+
+  .logo-image {
+      width: 80%;
+      height: 14vh;
+      object-fit: contain;
+      margin-bottom: 10px;
+  }
+
+  .card:hover {
+      outline: 3px solid black;
+  }
+
+  .product-image {
+      width: 90%;
+      height: auto;
+      margin-bottom: 10px;
+      border-radius: 10px;
+  }
+
+  .product-name {
+      font-weight: bold;
+      margin-bottom: 5px;
+      font-family: 'Poppins', sans-serif;
+      font-size: 1.3rem;
+      text-align: center;
+  }
+
+  @media screen and (max-width: 1024px) {
+      .section-a-image {
+          display: none;
+      }
+
+      .section-a-text-wrapper {
+          width: 100%;
+      }
+
+      #mounts-button,
+      #optics-button {
+          height: 25vw;
+          width: 25vw;
+      }
+
+      .modal-content {
+          width: 50vw;
+      }
+
+      h2 {
+          font-size: 2.8rem;
+          padding-left: 20px;
+          padding-right: 20px;
+      }
+
+      .card {
+          width: 27vw;
+      }
+
+      #mounts-button, #optics-button {
+        width: 19vw;
+        height: 24vw;
+      }
+  }
+
+  @media screen and (max-width: 768px) {
+      h1 {
+          font-size: 4rem;
+      }
+
+      .card {
+          width: 39vw;
+      }
+
+      #mounts-button, #optics-button {
+        width: 24vw;
+        height: 31vw;
+      }
+
+      .section-a-button-wrapper {
+        padding-top: 20px;
+      }
+
+      .looking-for-text {
+        margin-top: 22px;
+        font-size: 2.3rem;
+      }
+  }
+
+  @media screen and (max-width: 414px) {
+      #mounts-button, #optics-button {
+        font-size: 1.2rem !important;
+        width: 42vw !important;
+        height: 52vw !important; 
+      }
+
+      .looking-for-text {
+        margin-top: 20px !important;
+        margin-bottom: 0px !important;
+        font-size: 2rem;
+      }
+
+      h1 {
+        font-size: 1.7rem !important;
+      }
+      
+      .main-container {
+        height: auto;
+      }
+
+      .card {
+      width: 44vw !important;
+    }
+
+    .footprint-sub {
+      font-size: 0.8rem !important;
+    }
+
+      .grid-container {
+        gap: 15px !important;
+      }
+
+      .section-a-button-wrapper {
+        gap: 10px !important;
+        padding-bottom: 20px !important;
+      }
+
+      #mounts-button span:nth-child(2) {
+        font-size: 0.8rem !important;
+      }
+
+      #optics-button span:nth-child(2) {
+        font-size: 0.8rem !important;
+      }
+  }
+
+  @media screen and (max-width: 576px) {
+      .section-a-button-wrapper {
+          align-items: center;
+          gap: 20px;
+          padding: 20px 0 25px 0;
+      }
+
+      .card {
+          width: 40vw;
+      }
+
+      .looking-for-text {
+        margin-bottom: 20px;
+      }
+
+      #mounts-button,
+      #optics-button {
+          height: 52vw;
+          width: 42vw;
+      }
+
+      .footprint-sub {
+        padding: 0 20px 20px 20px;
+        font-size: 1rem;
+      }
+
+      h1 {
+          font-size: 2.2rem;
+          padding-right: 15px;
+          padding-left: 15px;
+      }
+
+      .looking-for-text {
+          margin-bottom: 20px;
+      }
+
+      .modal-content {
+          width: 55vw;
+      }
+
+      .header-title {
+          margin-bottom: 20px;
+      }
+
+      .get-started-text {
+          font-size: 1.8rem;
+      }
+
+      .section-a-text-wrapper {
+          justify-content: flex-start;
+      }
+
+      .footprint-title {
+          font-size: 2.3rem;
+      }
+
+      .footprints-middle {
+          flex-direction: column;
+          align-items: center;
+          margin-top: 4px;
+          margin-bottom: 0px;
+      }
+
+      #instructions-button,
+      #learn-more-button {
+          padding: 10px;
+          width: 57vw;
+      }
+  }
+</style>
+<div class="main-container" id="main-container-tool">
+  <div class="header-title">
+      <a href="optic-mount-match-tool">
+          <h1>RED DOT FOOTPRINT COMPATIBILITY</h1>
+          <div>API Key: ${API_KEY}</div>
+          <div>API Id: ${APP_ID}</div>
+      </a>
+  </div>
+  <div id="section-a-wrapper">
+      <div class="section-a-image"></div>
+      <div class="section-a-text-wrapper">
+          <h2 class="looking-for-text">What are you looking for today?</h2>
+          <div class="section-a-button-wrapper">
+              <a>
+                  <button id="mounts-button"
+                      onclick="showPage('#section-a-wrapper', '#footprints-page', 'mount', 'optic')">
+                      <span style="display: flex; flex-direction: column;"> Find A Mount </br>
+                          <span style="font-size: 1rem">COMPATIBLE WITH YOUR OPTIC</span>
+                      </span>
+                  </button>
+              </a>
+              <a>
+                  <button id="optics-button"
+                      onclick="showPage('#section-a-wrapper','#footprints-page', 'optic', 'mount')">
+                      <span style="display: flex; flex-direction: column;">Find A Red Dot Sight </br>
+                          <span style="font-size: 1rem">COMPATIBLE WITH YOUR MOUNT</span>
+                      </span>
+                  </button>
+              </a>
+          </div>
+      </div>
+  </div>
+  <div id="footprints-page" class="page">
+      <div class="footprints-top">
+          <button class="go-back-button"
+              onclick="showPage('#footprints-page', '#section-a-wrapper', null, null)"></button>
+      </div>
+      <h2 class="footprint-title"></h2>
+      <h3 class="footprint-sub"></h3>
+      <div class="footprints-middle">
+          <button id="learn-more-button">View Compatibility List</button>
+          <div id="modal2" class="modal">
+              <div class="modal-content" id="modal-pdf">
+                  <span class="close">&times;</span>
+                  <iframe id="pdf-iframe"
+                      src="https://image.primaryarms.com/images/landing-pages/optic-match-tool/Optic%20Footprint%20Match%20Infographic?updatedAt=1713797763200"></iframe>
+              </div>
+          </div>
+      </div>
+      <div class="footprints-bottom">
+          <div class="grid-container" id="grid-container"></div>
+      </div>
+  </div>
+</div>
+</div>
+<script>
+  document.addEventListener('DOMContentLoaded', function () {
+      updateFootprintText();
+  });
+
+  urlParamsRefresh = new URLSearchParams(window.location.search);
+  if (
+      (urlParamsRefresh.get('currentProduct') === 'optic' && urlParamsRefresh.get('searchingFor') === 'mount') ||
+      (urlParamsRefresh.get('currentProduct') === 'mount' && urlParamsRefresh.get('searchingFor') === 'optic')
+  ) {
+      window.location.href = window.location.origin + window.location.pathname;
+  }
+
+  function updateFootprintText() {
+      let urlParams = new URLSearchParams(window.location.search);
+      const footprintHeader = document.querySelector('.footprint-title');
+      const footprintSub = document.querySelector('.footprint-sub');
+      if (footprintHeader && urlParams.get('currentProduct') === "optic") {
+          footprintHeader.innerHTML = `What Is The Type Of Mount You Need For Your Red Dot?`;
+          footprintSub.innerHTML = `The options below represent the most common mounting standards for red dot sights. Select the mounting standard your optic uses and browse our selection of compatible red dot mounts. Check out the compatibility list for a complete list of red dot sights and which mounts they fit.`;
+      } else if (footprintHeader && urlParams.get('currentProduct') === "mount") {
+          footprintHeader.innerHTML = `What Is The Mount Footprint Of Your Red Dot?`;
+          footprintSub.innerHTML = `The options below represent the most common mounting standards for red dot sights. Select your type of mount and browse our selection of compatible red dot sights. Check out the compatibility list for a complete list of red dot sights and which mounts they fit.`;
+      }
+  }
+
+  function setLinkVars(linkVars) {
+      window.linkVars = linkVars;
+  }
+
+  function createCardLink(searchingFor) {
+      console.log(searchingFor)
+      // console.log(window.linkVars)
+      var mLinks = [];
+      var oLinks = [];
+
+      const cardLinks = document.querySelectorAll('.card a');
+
+      window.linkVars.forEach((v) => {
+          if (v.mountLink) {
+              mLinks.push(v.mountLink);
+          }
+          if (v.opticLink) {
+              oLinks.push(v.opticLink);
+          }
+      });
+
+      // console.log(mLinks);
+      // console.log(oLinks);
+
+      const path = searchingFor === 'mount' ? mLinks : oLinks;
+
+      cardLinks.forEach((link, index) => {
+              link.setAttribute('href', path[index]);
+          // console.log(link.href);
+      });
+
+
+  //     const sortedData = data.sort((a, b) => {
+  //         const mountingStandardA = a.mountingStandard || "";
+  //         const mountingStandardB = b.mountingStandard || "";
+  //         if (mountingStandardA === "" && mountingStandardB !== "") {
+  //             return 1;
+  //         } else if (mountingStandardA !== "" && mountingStandardB === "") {
+  //             return -1;
+  //         } else {
+  //             return mountingStandardA.localeCompare(mountingStandardB);
+  //         }
+  //     });
+
+  //     cardLinks.forEach((link, index) => {
+  //         const currentItem = sortedData[index];
+
+  //         if (currentItem && currentItem.mountLink && currentItem.productLink) {
+  //             const path = searchingFor === 'mount' ? currentItem.mountLink : currentItem.productLink;
+  //             link.setAttribute('href', path);
+  //         }
+  //     });
+  // }).catch((error) => {
+  //     console.error('Error fetching Firebase data:', error);
+  // });
+ 
+}
+
+  function showPage(currentPage, nextPage, searchingFor, currentProduct) {
+      document.querySelector(currentPage).style.display = 'none';
+      const container = document.getElementById('main-container-tool');
+      const pageToShow = document.querySelector(nextPage);
+      if (pageToShow) {
+          pageToShow.style.display = 'flex';
+      }
+      if (searchingFor != null) {
+          const url = new URL(window.location.href);
+          url.searchParams.set('currentProduct', currentProduct);
+          url.searchParams.set('searchingFor', searchingFor);
+          history.pushState({}, '', url);
+          container.style.height = 'auto';
+      } else {
+          history.pushState({}, '', '/optic-mount-match-tool');
+      }
+      updateFootprintText();
+      createCardLink(searchingFor);
+  }
+  var modal2 = document.getElementById('modal2');
+  var btn2 = document.getElementById('learn-more-button');
+  var closeBtn = document.getElementsByClassName('close')[0];
+  btn2.onclick = function () {
+      modal2.style.display = 'block';
+  }
+  closeBtn.onclick = function () {
+      modal2.style.display = 'none';
+  }
+  window.onclick = function (event) {
+      if (event.target == modal2) {
+          modal2.style.display = 'none';
+      }
+  }
+</script>
