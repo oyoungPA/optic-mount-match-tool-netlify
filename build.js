@@ -8,4 +8,12 @@ const fetchData = async () => {
   }
 };
 
+const distDir = path.join(__dirname, 'dist');
+if (!fs.existsSync(distDir)) {
+  fs.mkdirSync(distDir);
+}
+
+const outputPath = path.join(distDir, 'index.html');
+fs.writeFileSync(outputPath, outputHtml);
+
 fetchData();
