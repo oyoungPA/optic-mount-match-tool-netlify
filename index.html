@@ -81,7 +81,7 @@
     };
 
     initializeFirebaseApp()
-      .then(() => signInWithEmailAndPassword(getAuth(), `${EMAIL}`, `${PASSWORD}`))
+    //   .then(() => signInWithEmailAndPassword(getAuth(), `${EMAIL}`, `${PASSWORD}`))
       .then(() => getFirestoreCollection('optic-mount-match'))
       .then((querySnapshot) => {
     renderCollection(querySnapshot);
