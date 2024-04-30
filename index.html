@@ -1,93 +1,48 @@
 <script type="module">
-    import { initializeApp } from 'https://www.gstatic.com/firebasejs/9.17.1/firebase-app.js';
-    import { getAuth, signInWithEmailAndPassword } from 'https://www.gstatic.com/firebasejs/9.17.1/firebase-auth.js';
-    import { getFirestore, collection, getDocs } from 'https://www.gstatic.com/firebasejs/9.17.1/firebase-firestore.js';
-
-    var firebaseConfig = {
-      apiKey: `${API_KEY}`,
-      authDomain: "optic-mount-match-tool.firebaseapp.com",
-      databaseURL: "https://optic-mount-match-tool-default-rtdb.firebaseio.com",
-      projectId: "optic-mount-match-tool",
-      storageBucket: "optic-mount-match-tool.appspot.com",
-      messagingSenderId: "605300277251",
-      appId: "1:605300277251:web:7399d50655a7344a170e36",
+    const fetchData = async () => {
+      try {
+        const response = await fetch('/.netlify/functions/getFirebaseData');
+        const data = await response.json();
+        renderCollection(data);
+      } catch (error) {
+        console.error('Error fetching data:', error);
+      }
     };
-
-    const initializeFirebaseApp = () => {
-      return new Promise((resolve, reject) => {
-    const app = initializeApp(firebaseConfig);
-    resolve(app);
-      });
-    };
-
-    const getFirestoreCollection = (collectionName) => {
-      const db = getFirestore();
-      return getDocs(collection(db, collectionName));
-    };
-
-    let firebaseData = []; 
-
-    window.getFirebaseData = () => {
-      return getFirestoreCollection('optic-mount-match')
-    .then((querySnapshot) => {
-      let firebaseData = [];
-      querySnapshot.forEach((doc) => {
-        firebaseData.push(doc.data());
-      });
-      return firebaseData;
-    })
-    .catch((error) => {
-      console.error('Error fetching Firebase data:', error);
-      return null;
-    });
-    };
-
-
-    const renderCollection = (querySnapshot) => {
+  
+    const renderCollection = (data) => {
       var gridContainer = document.getElementById('grid-container');
-
-      const url = new URLSearchParams(window.location.search);
-      const searchingFor = url.get('searchingFor');
-
-      querySnapshot.forEach((doc) => {
-
+      data.forEach((item) => {
         var card = document.createElement('div');
         card.classList.add('card');
-
+  
         var link = document.createElement('a');
-        link.href = searchingFor === 'mount' ? doc.data().mountLink : doc.data().productLink;
+        link.href = item.searchingFor === 'mount' ? item.mountLink : item.productLink;
         link.target = '_blank';
-        link.classList.add('footprint-link')
-
+        link.classList.add('footprint-link');
+  
         var logoImg = document.createElement('img');
-        logoImg.src = doc.data().logoUrl;
+        logoImg.src = item.logoUrl;
         logoImg.classList.add('logo-image');
-
+  
         var productImg = document.createElement('img');
-        productImg.src = doc.data().productImageUrl;
+        productImg.src = item.productImageUrl;
         productImg.classList.add('product-image');
-
+  
         var text = document.createElement('p');
-        text.textContent = doc.data().mountingStandard;
+        text.textContent = item.mountingStandard;
         text.classList.add('product-name');
-
+  
         link.appendChild(logoImg);
         link.appendChild(productImg);
         link.appendChild(text);
-
+  
         card.appendChild(link);
         gridContainer.appendChild(card);
       });
     };
-
-    initializeFirebaseApp()
-      .then(() => signInWithEmailAndPassword(getAuth(), "oyoung@primaryarms.com", "2024Market!"))
-      .then(() => getFirestoreCollection('optic-mount-match'))
-      .then((querySnapshot) => {
-    renderCollection(querySnapshot);
-      })
-      .catch((error) => console.error('Error:', error));
-</script> <!-- optic match netsuite overrides --> 
+  
+    fetchData();
+  </script>  
 
 <!-- optic match netsuite overrides -->
 <style>
@@ -936,6 +891,60 @@
       window.linkVars = linkVars;
   }
 
+  function createCardLink(searchingFor) {
+      console.log(searchingFor)
+      // console.log(window.linkVars)
+      var mLinks = [];
+      var oLinks = [];
+
+      const cardLinks = document.querySelectorAll('.card a');
+
+      window.linkVars.forEach((v) => {
+          if (v.mountLink) {
+              mLinks.push(v.mountLink);
+          }
+          if (v.opticLink) {
+              oLinks.push(v.opticLink);
+          }
+      });
+
+      // console.log(mLinks);
+      // console.log(oLinks);
+
+      const path = searchingFor === 'mount' ? mLinks : oLinks;
+
+      cardLinks.forEach((link, index) => {
+              link.setAttribute('href', path[index]);
+          // console.log(link.href);
+      });
+
+
+  //     const sortedData = data.sort((a, b) => {
+  //         const mountingStandardA = a.mountingStandard || "";
+  //         const mountingStandardB = b.mountingStandard || "";
+  //         if (mountingStandardA === "" && mountingStandardB !== "") {
+  //             return 1;
+  //         } else if (mountingStandardA !== "" && mountingStandardB === "") {
+  //             return -1;
+  //         } else {
+  //             return mountingStandardA.localeCompare(mountingStandardB);
+  //         }
+  //     });
+
+  //     cardLinks.forEach((link, index) => {
+  //         const currentItem = sortedData[index];
+
+  //         if (currentItem && currentItem.mountLink && currentItem.productLink) {
+  //             const path = searchingFor === 'mount' ? currentItem.mountLink : currentItem.productLink;
+  //             link.setAttribute('href', path);
+  //         }
+  //     });
+  // }).catch((error) => {
+  //     console.error('Error fetching Firebase data:', error);
+  // });
+ 
+}
+
   function showPage(currentPage, nextPage, searchingFor, currentProduct) {
       document.querySelector(currentPage).style.display = 'none';
       const container = document.getElementById('main-container-tool');
@@ -953,7 +962,7 @@
           history.pushState({}, '', '/optic-mount-match-tool');
       }
       updateFootprintText();
-    //   createCardLink(searchingFor);
+      createCardLink(searchingFor);
   }
   var modal2 = document.getElementById('modal2');
   var btn2 = document.getElementById('learn-more-button');
