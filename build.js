@@ -1,3 +1,6 @@
+const path = require('path');
+const fs = require('fs');
+
 const fetchData = async () => {
   try {
     const response = await fetch('/.netlify/functions/getFirebaseData');
