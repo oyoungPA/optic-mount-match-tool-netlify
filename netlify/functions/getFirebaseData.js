@@ -1,6 +1,6 @@
-import { initializeApp } from 'firebase/app';
-import { getAuth, signInWithEmailAndPassword } from 'firebase/auth';
-import { getFirestore, collection, getDocs } from 'firebase/firestore';
+import * as firebase from 'firebase/app';
+import 'firebase/auth';
+import 'firebase/firestore';
 
 const firebaseConfig = {
   apiKey: process.env.apiKey,
@@ -12,22 +12,30 @@ const firebaseConfig = {
   appId: process.env.appId,
 };
 
-const initializeFirebaseApp = () => {
-  return initializeApp(firebaseConfig);
-};
-
-const getFirestoreCollection = async (collectionName) => {
-  const db = getFirestore();
-  const querySnapshot = await getDocs(collection(db, collectionName));
-  return querySnapshot.docs.map(doc => doc.data());
-};
+firebase.initializeApp(firebaseConfig);
 
 const getFirebaseData = async () => {
-  const app = initializeFirebaseApp();
-  const auth = getAuth(app);
-  await signInWithEmailAndPassword(auth, process.env.email, process.env.password);
-  const data = await getFirestoreCollection('optic-mount-match');
-  return data;
+  const auth = firebase.auth();
+  await auth.signInWithEmailAndPassword(process.env.email, process.env.password);
+  const db = firebase.firestore();
+  const querySnapshot = await db.collection('optic-mount-match').get();
+  const data = querySnapshot.docs.map(doc => doc.data());
+  return {
+    data,
+    env: {
+      apiKey: process.env.apiKey,
+      authDomain: process.env.authDomain,
+      databaseURL: process.env.databaseURL,
+      messagingSenderId: process.env.messagingSenderId,
+      appId: process.env.appId,
+    }
+  };
 };
 
-export { getFirebaseData };
+exports.handler = async () => {
+  const { data, env } = await getFirebaseData();
+  return {
+    statusCode: 200,
+    body: JSON.stringify({ data, env }),
+  };
+};

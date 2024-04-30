@@ -2,11 +2,25 @@
     const fetchData = async () => {
       try {
         const response = await fetch('/.netlify/functions/getFirebaseData');
-        const data = await response.json();
+        const { data, env } = await response.json();
+        initializeFirebase(env);
         renderCollection(data);
       } catch (error) {
         console.error('Error fetching data:', error);
       }
+    };
+  
+    const initializeFirebase = (env) => {
+      const firebaseConfig = {
+        apiKey: env.apiKey,
+        authDomain: env.authDomain,
+        databaseURL: env.databaseURL,
+        projectId: "optic-mount-match-tool",
+        storageBucket: "optic-mount-match-tool.appspot.com",
+        messagingSenderId: env.messagingSenderId,
+        appId: env.appId,
+      };
+      firebase.initializeApp(firebaseConfig);
     };
   
     const renderCollection = (data) => {
@@ -14,35 +28,29 @@
       data.forEach((item) => {
         var card = document.createElement('div');
         card.classList.add('card');
-  
         var link = document.createElement('a');
         link.href = item.searchingFor === 'mount' ? item.mountLink : item.productLink;
         link.target = '_blank';
         link.classList.add('footprint-link');
-  
         var logoImg = document.createElement('img');
         logoImg.src = item.logoUrl;
         logoImg.classList.add('logo-image');
-  
         var productImg = document.createElement('img');
         productImg.src = item.productImageUrl;
         productImg.classList.add('product-image');
-  
         var text = document.createElement('p');
         text.textContent = item.mountingStandard;
         text.classList.add('product-name');
-  
         link.appendChild(logoImg);
         link.appendChild(productImg);
         link.appendChild(text);
-  
         card.appendChild(link);
         gridContainer.appendChild(card);
       });
     };
   
     fetchData();
-  </script>  
+  </script>
 
 <!-- optic match netsuite overrides -->
 <style>
